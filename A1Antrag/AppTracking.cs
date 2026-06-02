@@ -1,4 +1,4 @@
-using Devart.Data.Oracle;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Diagnostics;
 using System.IO;

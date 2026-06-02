@@ -1,4 +1,4 @@
-using Devart.Data.Oracle;
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
 using System.Drawing;
@@ -110,7 +110,7 @@ namespace A1Antrag
         private void UpdateStatusBar()
         {
             int count = _dataTable?.Rows.Count ?? 0;
-            statusLabel.Text = $"{count} Datensätze  |  Benutzer: {Environment.UserName}  |  Server: {_connection?.Server}";
+            statusLabel.Text = $"{count} Datensätze  |  Benutzer: {Environment.UserName}  |  Server: {_connection?.DataSource}";
         }
 
         private DataRow GetSelectedRow()
