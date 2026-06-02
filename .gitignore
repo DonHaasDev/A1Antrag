@@ -1,0 +1,14 @@
+## Build output
+bin/
+obj/
+*.user
+*.suo
+*.vsidx
+.vs/
+
+## Secrets
+appsettings.local.json
+**/licenses.licx
+
+## macOS
+.DS_Store

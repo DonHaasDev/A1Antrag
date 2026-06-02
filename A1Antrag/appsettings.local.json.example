@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "Oracle": "User Id=sivas;Password=DEIN_PASSWORT;Server=10.10.10.36;Direct=True;Sid=LINUX"
+  }
+}
