@@ -31,8 +31,8 @@ Anlegen → Beantragen (online bei DRV/GKV) → Genehmigt (Bescheinigung erhalte
 | .NET | 10.0 (Windows) |
 | UI-Framework | WinForms |
 | Datenbank | Oracle (SIVAS-Schema) |
-| Oracle-Treiber | Devart.Data.Oracle 11.1.100 |
-| Konfiguration | Microsoft.Extensions.Configuration.Json |
+| Oracle-Treiber | Oracle.ManagedDataAccess.Core 23.7.0 |
+| Konfiguration | Microsoft.Extensions.Configuration.Json 10.0 |
 | Zieldatenbank | `SIVAS.SL_A1_ANTRAG_TAB` |
 
 ---
@@ -42,8 +42,9 @@ Anlegen → Beantragen (online bei DRV/GKV) → Genehmigt (Bescheinigung erhalte
 - Windows 10/11 (64-bit)
 - .NET 10 Runtime oder SDK
 - Netzwerkzugang zum Oracle-Server (`10.10.10.36`, Port 1521)
-- Devart-Lizenz (Direct-Mode, kein Oracle Client erforderlich)
 - Zugang zum SIVAS-Schema (`sivas`-User)
+
+> Kein Oracle Client erforderlich – der Managed Driver verbindet direkt über TCP.
 
 ---
 
@@ -67,7 +68,7 @@ Datei `appsettings.local.json` anpassen:
 ```json
 {
   "ConnectionStrings": {
-    "Oracle": "User Id=sivas;Password=DEIN_PASSWORT;Server=10.10.10.36;Direct=True;Sid=LINUX"
+    "Oracle": "User Id=sivas;Password=DEIN_PASSWORT;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.10.10.36)(PORT=1521))(CONNECT_DATA=(SID=LINUX)))"
   }
 }
 ```
@@ -203,7 +204,5 @@ A1Antrag/
     ├── A1AntragDetailForm.cs / *.Designer.cs  # Erfassungsformular
     ├── appsettings.json                # Konfigurationsstruktur
     ├── appsettings.local.json          # Lokale Credentials (gitignored)
-    ├── appsettings.local.json.example  # Vorlage für Credentials
-    └── Properties/
-        └── AssemblyInfo.cs
+    └── appsettings.local.json.example  # Vorlage für Credentials
 ```
