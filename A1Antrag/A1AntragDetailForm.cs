@@ -29,13 +29,22 @@ public partial class A1AntragDetailForm : Form
         btnClearMa.Click    += (_, _) => _selectedMa.Clear();
         btnClearKunde.Click += BtnClearKunde_Click;
 
+        dtpVon.DateTimeChanged += (_, _) =>
+        {
+            if (dtpBis.DateTime.Date < dtpVon.DateTime.Date)
+                dtpBis.EditValue = dtpVon.EditValue;
+        };
+
         if (_isNew)
             SetupNewMode();
         else
             SetupEditMode();
 
-        // Adjust form height to content
-        ClientSize  = new Size(ClientSize.Width, pnlLeft.Top + btnSpeichern.Bottom + 26);
+        // Adjust form height to content (right panel may be taller in new mode)
+        int formHeight = pnlLeft.Top + btnSpeichern.Bottom + 26;
+        if (_isNew)
+            formHeight = Math.Max(formHeight, pnlRight.Bottom + 10);
+        ClientSize  = new Size(ClientSize.Width, formHeight);
         MinimumSize = new Size(Width, Height);
         MaximumSize = new Size(Width, Height);
     }

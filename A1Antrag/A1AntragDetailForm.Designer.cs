@@ -65,12 +65,13 @@ partial class A1AntragDetailForm
         components = new Container();
         SuspendLayout();
 
-        const int lw  = 80;
-        const int row = 28;
-        const int lx  = 10;
-        const int tx  = lx + lw + 6;       // 96
-        const int tw  = 240;
-        int       leftW = tw + tx + 10;    // ≈ 346
+        const int lw    = 80;
+        const int row   = 28;
+        const int lx    = 6;
+        const int tx    = lx + lw + 6;     // = 92
+        const int tw    = 210;
+        const int xBtnX = tx + tw + 8;     // = 310
+        int       leftW = xBtnX + 28;      // = 338
 
         // ── LEFT PANEL ──────────────────────────────────────────────
         pnlLeft = new Panel { Location = new Point(10, 10), Size = new Size(leftW, 610), AutoSize = false };
@@ -104,7 +105,7 @@ partial class A1AntragDetailForm
         lblLand    = BuildLabel("Land",    lx, y, lw); txtLand    = BuildText(tx, y - 2, tw);  txtLand.Properties.MaxLength    = 30;
         txtLand.Text = "Deutschland";
 
-        btnClearKunde = BuildXButton(leftW - 30, lblKdnr.Top - 2, lblLand.Bottom - lblKdnr.Top + 6);
+        btnClearKunde = BuildXButton(xBtnX, lblKdnr.Top - 2, lblLand.Bottom - lblKdnr.Top + 6);
 
         y = lblLand.Bottom + 16;
         lblInfoStatus = BuildInfoLabel("", lx, y, leftW - 6, 8.5F, FontStyle.Bold, Color.DarkRed);
@@ -143,7 +144,7 @@ partial class A1AntragDetailForm
         });
 
         // ── RIGHT PANEL (new mode) ───────────────────────────────────
-        const int rw = 530;
+        const int rw = 640;
         pnlRight = new Panel
         {
             Location = new Point(pnlLeft.Right + 12, 10),
@@ -176,6 +177,7 @@ partial class A1AntragDetailForm
         lblGepaTitle.Appearance.Options.UseTextOptions = true;
 
         gcGepaSearch = BuildGrid(0, lblGepaTitle.Bottom + 4, rw, 300, true, out gvGepaSearch);
+        gvGepaSearch.OptionsView.ColumnAutoWidth = true;
         AddGridCol(gvGepaSearch, "KDNR",    "KDNR",    62);
         AddGridCol(gvGepaSearch, "FIRMA",   "Firma",   155);
         AddGridCol(gvGepaSearch, "STRASSE", "Strasse", 110);
@@ -323,7 +325,7 @@ partial class A1AntragDetailForm
         d.Properties.DisplayFormat.FormatString = "dd.MM.yyyy";
         d.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.DateTime;
         d.Properties.Mask.EditMask = "dd.MM.yyyy";
-        d.Properties.CalendarView  = DevExpress.XtraEditors.Repository.CalendarView.TouchUI;
+        d.Properties.CalendarView  = DevExpress.XtraEditors.Repository.CalendarView.Classic;
         ((ISupportInitialize)d.Properties.CalendarTimeProperties).EndInit();
         ((ISupportInitialize)d.Properties).EndInit();
         return d;

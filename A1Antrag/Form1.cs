@@ -146,6 +146,21 @@ public partial class Form1 : Form
             LoadData();
     }
 
+    private void btnStornieren_Click(object? sender, EventArgs e)
+    {
+        var row = GetSelectedRow();
+        if (row == null) { Hinweis(); return; }
+
+        string name = $"{row["FAM_NAME"]}, {row["NAME_VORNAME"]}";
+        if (MessageBox.Show(
+                $"Stornierung für '{name}' beantragen?", "Stornieren bestätigen",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+            return;
+
+        CallUpdateDelete(row, "85");
+    }
+
     private void btnLoeschen_Click(object? sender, EventArgs e)
     {
         var row = GetSelectedRow();

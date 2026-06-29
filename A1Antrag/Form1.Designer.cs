@@ -20,6 +20,7 @@ partial class Form1
     private BarDockControl barDockControlRight = null!;
     private BarButtonItem btnNeu = null!;
     private BarButtonItem btnBearbeiten = null!;
+    private BarButtonItem btnStornieren = null!;
     private BarButtonItem btnLoeschen = null!;
     private BarButtonItem btnBeantragen = null!;
     private BarButtonItem btnGenehmigen = null!;
@@ -54,6 +55,7 @@ partial class Form1
         barDockControlRight  = new BarDockControl();
         btnNeu               = new BarButtonItem();
         btnBearbeiten        = new BarButtonItem();
+        btnStornieren        = new BarButtonItem();
         btnLoeschen          = new BarButtonItem();
         btnBeantragen        = new BarButtonItem();
         btnGenehmigen        = new BarButtonItem();
@@ -86,10 +88,10 @@ partial class Form1
         barManager1.DockControls.Add(barDockControlLeft);
         barManager1.DockControls.Add(barDockControlRight);
         barManager1.Items.AddRange(new BarItem[] {
-            btnNeu, btnBearbeiten, btnLoeschen,
+            btnNeu, btnBearbeiten, btnStornieren, btnLoeschen,
             btnBeantragen, btnGenehmigen, btnVorlErhebung, btnAktualisieren
         });
-        barManager1.MaxItemId = 7;
+        barManager1.MaxItemId = 8;
         barManager1.AllowMoveBarOnToolbar = false;
 
         // bar1
@@ -100,6 +102,7 @@ partial class Form1
         bar1.LinksPersistInfo.AddRange(new LinkPersistInfo[] {
             new LinkPersistInfo(btnNeu),
             new LinkPersistInfo(btnBearbeiten),
+            new LinkPersistInfo(btnStornieren),
             new LinkPersistInfo(btnLoeschen),
             new LinkPersistInfo(btnBeantragen, true),
             new LinkPersistInfo(btnGenehmigen),
@@ -112,14 +115,16 @@ partial class Form1
         bar1.Text = "Hauptfunktionen";
 
         // Buttons
-        ConfigBarButton(btnNeu,           "Neu",            0, "Neuen A1-Antrag anlegen (Strg+N)");
-        ConfigBarButton(btnBearbeiten,    "Bearbeiten",     1, "Markierten Datensatz bearbeiten (F2)");
-        ConfigBarButton(btnLoeschen,      "Löschen",        2, "Markierten Datensatz löschen");
-        ConfigBarButton(btnBeantragen,    "Beantragen",     3, "A1-Antrag als beantragt markieren");
-        ConfigBarButton(btnGenehmigen,    "Genehmigen",     4, "A1-Antrag als genehmigt markieren");
-        ConfigBarButton(btnVorlErhebung,  "Vorl. Erhebung", 5, "Vorläufige Erhebung setzen");
-        ConfigBarButton(btnAktualisieren, "Aktualisieren (F5)", 6, "Daten neu laden");
+        ConfigBarButton(btnNeu,           "Neu",                0, "Neuen A1-Antrag anlegen (Strg+N)");
+        ConfigBarButton(btnBearbeiten,    "Bearbeiten",         1, "Markierten Datensatz bearbeiten (F2)");
+        ConfigBarButton(btnStornieren,    "Stornieren",         2, "Stornierung beantragen (Status 85)");
+        ConfigBarButton(btnLoeschen,      "Löschen",            3, "Markierten Datensatz löschen");
+        ConfigBarButton(btnBeantragen,    "Beantragen",         4, "A1-Antrag als beantragt markieren");
+        ConfigBarButton(btnGenehmigen,    "Genehmigen",         5, "A1-Antrag als genehmigt markieren");
+        ConfigBarButton(btnVorlErhebung,  "Vorl. Erhebung",     6, "Vorläufige Erhebung setzen");
+        ConfigBarButton(btnAktualisieren, "Aktualisieren (F5)", 7, "Daten neu laden");
 
+        SetBarButtonColor(btnStornieren,   Color.DarkRed);
         SetBarButtonColor(btnLoeschen,     Color.DarkRed);
         SetBarButtonColor(btnBeantragen,   Color.FromArgb(180, 100, 0));
         SetBarButtonColor(btnGenehmigen,   Color.DarkGreen);
@@ -127,11 +132,17 @@ partial class Form1
 
         btnNeu.ItemClick           += (_, _) => btnNeu_Click(this, EventArgs.Empty);
         btnBearbeiten.ItemClick    += (_, _) => btnBearbeiten_Click(this, EventArgs.Empty);
+        btnStornieren.ItemClick    += (_, _) => btnStornieren_Click(this, EventArgs.Empty);
         btnLoeschen.ItemClick      += (_, _) => btnLoeschen_Click(this, EventArgs.Empty);
         btnBeantragen.ItemClick    += (_, _) => btnBeantragen_Click(this, EventArgs.Empty);
         btnGenehmigen.ItemClick    += (_, _) => btnGenehmigen_Click(this, EventArgs.Empty);
         btnVorlErhebung.ItemClick  += (_, _) => btnVorlErhebung_Click(this, EventArgs.Empty);
         btnAktualisieren.ItemClick += (_, _) => btnAktualisieren_Click(this, EventArgs.Empty);
+
+        btnLoeschen.Visibility     = BarItemVisibility.Never;
+        btnBeantragen.Visibility   = BarItemVisibility.Never;
+        btnGenehmigen.Visibility   = BarItemVisibility.Never;
+        btnVorlErhebung.Visibility = BarItemVisibility.Never;
 
         // Dock controls
         barDockControlTop.CausesValidation = false;
