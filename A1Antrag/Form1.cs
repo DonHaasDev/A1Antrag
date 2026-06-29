@@ -1,3 +1,6 @@
+using DevExpress.XtraGrid.Columns;
+using DevExpress.XtraGrid.Views.Grid;
+using DevExpress.Utils;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 
@@ -22,6 +25,7 @@ public partial class Form1 : Form
             _connection = new OracleConnection(_connectionString);
             _connection.Open();
             AppTracking.Track(_connection);
+            SetupColumns();
             LoadData();
         }
         catch (Exception ex)
@@ -34,9 +38,15 @@ public partial class Form1 : Form
 
     private void LoadData()
     {
+        if (_connection == null) return;
         try
         {
             Cursor = Cursors.WaitCursor;
+
+            bool offen = radioGroup1.SelectedIndex == 0;
+            string filter = offen
+                ? "WHERE STATUS NOT IN ('85 Stornierung beantragt','90 Antrag ungültig (löschen)')"
+                : "WHERE ANGELEGT_AM >= SYSDATE - 730";
 
             using var adapter = new OracleDataAdapter(
                 "SELECT LFDNR, PERS_NR, FAM_NAME, NAME_VORNAME, VON, BIS, " +
@@ -45,16 +55,13 @@ public partial class Form1 : Form
                 "GENEHMIGT_JN, GENEHMIGT_AM, GENEHMIGT_VON, " +
                 "VORL_ERH_JN, VORL_ERH_AM, VORL_ERH_VON, " +
                 "ANGELEGT_AM, ANGELEGT_VON, BEARBEITET_AM, BEARBEITET_VON " +
-                "FROM SIVAS.SL_A1_ANTRAG_TAB ORDER BY LFDNR DESC",
-                _connection!);
+                $"FROM SIVAS.SL_A1_ANTRAG_TAB {filter} ORDER BY LFDNR DESC",
+                _connection);
 
             _dataTable = new DataTable();
             adapter.Fill(_dataTable);
 
-            dataGridView1.DataSource = null;
-            dataGridView1.DataSource = _dataTable;
-
-            SetupColumns();
+            gridControl1.DataSource = _dataTable;
             UpdateStatusBar();
         }
         catch (Exception ex)
@@ -70,10 +77,10 @@ public partial class Form1 : Form
 
     private void SetupColumns()
     {
-        dataGridView1.Columns.Clear();
+        gridView1.Columns.Clear();
 
-        AddCol("LFDNR",        "Lfd.Nr.",          65,  DataGridViewContentAlignment.MiddleRight);
-        AddCol("PERS_NR",      "Pers.Nr.",          65,  DataGridViewContentAlignment.MiddleRight);
+        AddCol("LFDNR",        "Lfd.Nr.",          65,  HorzAlignment.Far);
+        AddCol("PERS_NR",      "Pers.Nr.",          65,  HorzAlignment.Far);
         AddCol("FAM_NAME",     "Name",              110);
         AddCol("NAME_VORNAME", "Vorname",           110);
         AddCol("VON",          "Von",               90,  format: "dd.MM.yyyy");
@@ -81,27 +88,33 @@ public partial class Form1 : Form
         AddCol("FIRMA",        "Firma / Einsatzort",200);
         AddCol("LAND",         "Land",              80);
         AddCol("STATUS",       "Status",            120);
-        AddCol("BEANTRAGT_JN", "Beantr.",           60,  DataGridViewContentAlignment.MiddleCenter);
-        AddCol("GENEHMIGT_JN", "Genehmigt",         75,  DataGridViewContentAlignment.MiddleCenter);
-        AddCol("VORL_ERH_JN",  "Vorl.Erh.",         70,  DataGridViewContentAlignment.MiddleCenter);
+        AddCol("BEANTRAGT_JN", "Beantr.",           60,  HorzAlignment.Center);
+        AddCol("GENEHMIGT_JN", "Genehmigt",         75,  HorzAlignment.Center);
+        AddCol("VORL_ERH_JN",  "Vorl.Erh.",         70,  HorzAlignment.Center);
         AddCol("ANGELEGT_VON", "Angelegt von",      110);
         AddCol("ANGELEGT_AM",  "Angelegt am",       100, format: "dd.MM.yyyy");
     }
 
     private void AddCol(string field, string header, int width,
-        DataGridViewContentAlignment align = DataGridViewContentAlignment.MiddleLeft,
-        string? format = null)
+        HorzAlignment align = HorzAlignment.Near, string? format = null)
     {
-        var col = new DataGridViewTextBoxColumn
+        var col = new GridColumn
         {
-            DataPropertyName = field,
-            HeaderText = header,
-            Width = width,
-            DefaultCellStyle = { Alignment = align }
+            FieldName    = field,
+            Caption      = header,
+            Visible      = true,
+            VisibleIndex = gridView1.Columns.Count,
+            Width        = width
         };
+        col.AppearanceCell.TextOptions.HAlignment   = align;
+        col.AppearanceHeader.TextOptions.HAlignment = align;
+        col.OptionsColumn.AllowEdit = false;
         if (format != null)
-            col.DefaultCellStyle.Format = format;
-        dataGridView1.Columns.Add(col);
+        {
+            col.DisplayFormat.FormatType   = FormatType.DateTime;
+            col.DisplayFormat.FormatString = format;
+        }
+        gridView1.Columns.Add(col);
     }
 
     private void UpdateStatusBar()
@@ -112,10 +125,9 @@ public partial class Form1 : Form
 
     private DataRow? GetSelectedRow()
     {
-        if (dataGridView1.CurrentRow == null) return null;
-        int idx = dataGridView1.CurrentRow.Index;
-        if (_dataTable == null || idx < 0 || idx >= _dataTable.Rows.Count) return null;
-        return _dataTable.Rows[idx];
+        int handle = gridView1.FocusedRowHandle;
+        if (handle < 0) return null;
+        return gridView1.GetDataRow(handle);
     }
 
     private void btnNeu_Click(object? sender, EventArgs e)
@@ -164,42 +176,46 @@ public partial class Form1 : Form
         var row = GetSelectedRow();
         if (row == null) { Hinweis(); return; }
 
-        if (row["BEANTRAGT_JN"].ToString() == "J" &&
-            MessageBox.Show("Antrag ist bereits als beantragt markiert. Erneut setzen?",
-                "Hinweis", MessageBoxButtons.YesNo) != DialogResult.Yes)
+        string status = row["STATUS"]?.ToString() ?? "";
+        if (status.StartsWith("30") &&
+            MessageBox.Show("Antrag wurde bereits zur Beantragung weitergeleitet. Erneut setzen?",
+                "Hinweis", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             return;
 
-        ExecuteWorkflow(row, "BEANTRAGT_JN", "BEANTRAGT_AM", "BEANTRAGT_VON", "Beantragt");
+        CallUpdateDelete(row, "30");
     }
 
     private void btnGenehmigen_Click(object? sender, EventArgs e)
     {
         var row = GetSelectedRow();
         if (row == null) { Hinweis(); return; }
-        ExecuteWorkflow(row, "GENEHMIGT_JN", "GENEHMIGT_AM", "GENEHMIGT_VON", "Genehmigt");
+        CallUpdateDelete(row, "50");
     }
 
     private void btnVorlErhebung_Click(object? sender, EventArgs e)
     {
         var row = GetSelectedRow();
         if (row == null) { Hinweis(); return; }
-        ExecuteWorkflow(row, "VORL_ERH_JN", "VORL_ERH_AM", "VORL_ERH_VON", "Vorl. Erhalten");
+        CallUpdateDelete(row, "40");
     }
 
-    private void ExecuteWorkflow(DataRow row, string jnField, string amField, string vonField, string status)
+    // Ruft SL_A1_ANTRAG.UPDATE_DELETE auf, das Status setzt UND E-Mail-Benachrichtigung auslöst.
+    // i_function: '30'=Beantragen, '40'=Vorl.Bescheinigung, '50'=Bescheinigung erhalten,
+    //             '80'=geändert, '85'=Stornierung, '90'=ungültig
+    private void CallUpdateDelete(DataRow row, string function)
     {
         try
         {
             using var cmd = _connection!.CreateCommand();
-            cmd.CommandText =
-                $"UPDATE SIVAS.SL_A1_ANTRAG_TAB SET " +
-                $"{jnField} = 'J', {amField} = SYSDATE, {vonField} = :von, " +
-                $"STATUS = :status, BEARBEITET_AM = SYSDATE, BEARBEITET_VON = :bearbeitet_von " +
-                $"WHERE LFDNR = :lfdnr";
-            cmd.Parameters.Add(new OracleParameter("von", Environment.UserName));
-            cmd.Parameters.Add(new OracleParameter("status", status));
-            cmd.Parameters.Add(new OracleParameter("bearbeitet_von", Environment.UserName));
-            cmd.Parameters.Add(new OracleParameter("lfdnr", row["LFDNR"]));
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandText = "SL_A1_ANTRAG.UPDATE_DELETE";
+            cmd.BindByName  = true;
+
+            cmd.Parameters.Add(new OracleParameter("i_lfdnr",    OracleDbType.Decimal)  { Value = row["LFDNR"] });
+            cmd.Parameters.Add(new OracleParameter("i_function", OracleDbType.Varchar2) { Value = function });
+            cmd.Parameters.Add(new OracleParameter("i_user",     OracleDbType.Varchar2) { Value = Environment.UserName.ToUpper() });
+
             cmd.ExecuteNonQuery();
             LoadData();
         }
@@ -212,21 +228,33 @@ public partial class Form1 : Form
 
     private void btnAktualisieren_Click(object? sender, EventArgs e) => LoadData();
 
-    private void dataGridView1_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+    // Status-Strings kommen direkt aus SL_A1_ANTRAG.UPDATE_DELETE / A1_ANLEGEN
+    private void gridView1_RowStyle(object? sender, RowStyleEventArgs e)
     {
-        if (e.RowIndex < 0 || _dataTable == null || e.RowIndex >= _dataTable.Rows.Count) return;
-        string status = _dataTable.Rows[e.RowIndex]["STATUS"].ToString() ?? "";
+        if (e.RowHandle < 0) return;
+        string status = gridView1.GetRowCellValue(e.RowHandle, "STATUS")?.ToString() ?? "";
 
-        e.CellStyle.BackColor = status switch
+        Color? bg = null;
+        if      (status.StartsWith("50")) bg = Color.FromArgb(198, 239, 206); // Bescheinigung erhalten → grün
+        else if (status.StartsWith("40")) bg = Color.FromArgb(199, 244, 255); // Vorl. Bescheinigung    → blau
+        else if (status.StartsWith("30")) bg = Color.FromArgb(255, 235, 156); // Zur Beantragung        → gelb
+        else if (status.StartsWith("85")) bg = Color.FromArgb(255, 199, 206); // Stornierung beantragt  → rot
+        else if (status.StartsWith("90")) bg = Color.FromArgb(220, 220, 220); // Ungültig               → grau
+
+        if (bg != null)
         {
-            "Genehmigt"      => Color.FromArgb(198, 239, 206),
-            "Beantragt"      => Color.FromArgb(255, 235, 156),
-            "Vorl. Erhalten" => Color.FromArgb(199, 244, 255),
-            _                => Color.White
-        };
+            e.Appearance.BackColor      = bg.Value;
+            e.Appearance.BackColor2     = bg.Value;
+            e.Appearance.Options.UseBackColor = true;
+        }
     }
 
-    private void dataGridView1_DoubleClick(object? sender, EventArgs e) => btnBearbeiten_Click(sender, e);
+    private void gridView1_DoubleClick(object? sender, EventArgs e)
+    {
+        var hit = gridView1.CalcHitInfo(gridControl1.PointToClient(MousePosition));
+        if (!hit.InRow && !hit.InRowCell) return;
+        btnBearbeiten_Click(sender, e);
+    }
 
     private void Form1_KeyDown(object? sender, KeyEventArgs e)
     {

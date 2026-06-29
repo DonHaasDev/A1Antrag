@@ -1,5 +1,11 @@
 #nullable enable
 using System.ComponentModel;
+using DevExpress.Utils;
+using DevExpress.XtraEditors;
+using DevExpress.XtraGrid;
+using DevExpress.XtraGrid.Columns;
+using DevExpress.XtraGrid.Views.Base;
+using DevExpress.XtraGrid.Views.Grid;
 
 namespace A1Antrag;
 
@@ -7,45 +13,49 @@ partial class A1AntragDetailForm
 {
     private IContainer? components = null;
 
-    private Label lblPersNr = null!;
-    private TextBox txtPersNr = null!;
-    private Label lblFamName = null!;
-    private TextBox txtFamName = null!;
-    private Label lblVorname = null!;
-    private TextBox txtVorname = null!;
+    // Left panel – shared
+    private Panel pnlLeft = null!;
+    private LabelControl lblMaHint = null!;
+    private GridControl gcSelectedMa = null!;
+    private GridView gvSelectedMa = null!;
+    private SimpleButton btnClearMa = null!;
 
-    private Label lblVon = null!;
-    private DateTimePicker dtpVon = null!;
-    private Label lblBis = null!;
-    private DateTimePicker dtpBis = null!;
+    private LabelControl lblVon = null!;
+    private DateEdit dtpVon = null!;
+    private LabelControl lblBis = null!;
+    private DateEdit dtpBis = null!;
 
-    private Label lblKdnr = null!;
-    private TextBox txtKdnr = null!;
-    private Label lblFirma = null!;
-    private TextBox txtFirma = null!;
-    private Label lblAnsprechName = null!;
-    private TextBox txtAnsprechName = null!;
-    private Label lblAnsprechVorname = null!;
-    private TextBox txtAnsprechVorname = null!;
-    private Label lblStrasse = null!;
-    private TextBox txtStrasse = null!;
-    private Label lblPlz = null!;
-    private TextBox txtPlz = null!;
-    private Label lblOrt = null!;
-    private TextBox txtOrt = null!;
-    private Label lblLand = null!;
-    private TextBox txtLand = null!;
+    private LabelControl lblKdnr = null!;
+    private TextEdit txtKdnr = null!;
+    private LabelControl lblFirma = null!;
+    private TextEdit txtFirma = null!;
+    private LabelControl lblStrasse = null!;
+    private TextEdit txtStrasse = null!;
+    private LabelControl lblPlz = null!;
+    private TextEdit txtPlz = null!;
+    private LabelControl lblOrt = null!;
+    private TextEdit txtOrt = null!;
+    private LabelControl lblLand = null!;
+    private TextEdit txtLand = null!;
+    private SimpleButton btnClearKunde = null!;
 
-    private Button btnSpeichern = null!;
-    private Button btnAbbrechen = null!;
+    private LabelControl lblInfoStatus = null!;
+    private LabelControl lblPflichtHint = null!;
+    private SimpleButton btnSpeichern = null!;
+    private SimpleButton btnAbbrechen = null!;
 
-    private GroupBox grpMitarbeiter = null!;
-    private GroupBox grpZeitraum = null!;
-    private GroupBox grpEinsatzort = null!;
+    // Right panel – new mode only
+    private Panel pnlRight = null!;
+    private LabelControl lblMaTitle = null!;
+    private GridControl gcMaSearch = null!;
+    private GridView gvMaSearch = null!;
+    private LabelControl lblGepaTitle = null!;
+    private GridControl gcGepaSearch = null!;
+    private GridView gvGepaSearch = null!;
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing && (components != null))
+        if (disposing && components != null)
             components.Dispose();
         base.Dispose(disposing);
     }
@@ -53,195 +63,269 @@ partial class A1AntragDetailForm
     private void InitializeComponent()
     {
         components = new Container();
-
-        grpMitarbeiter     = new GroupBox();
-        grpZeitraum        = new GroupBox();
-        grpEinsatzort      = new GroupBox();
-
-        lblPersNr          = new Label();
-        txtPersNr          = new TextBox();
-        lblFamName         = new Label();
-        txtFamName         = new TextBox();
-        lblVorname         = new Label();
-        txtVorname         = new TextBox();
-
-        lblVon             = new Label();
-        dtpVon             = new DateTimePicker();
-        lblBis             = new Label();
-        dtpBis             = new DateTimePicker();
-
-        lblKdnr            = new Label();
-        txtKdnr            = new TextBox();
-        lblFirma           = new Label();
-        txtFirma           = new TextBox();
-        lblAnsprechName    = new Label();
-        txtAnsprechName    = new TextBox();
-        lblAnsprechVorname = new Label();
-        txtAnsprechVorname = new TextBox();
-        lblStrasse         = new Label();
-        txtStrasse         = new TextBox();
-        lblPlz             = new Label();
-        txtPlz             = new TextBox();
-        lblOrt             = new Label();
-        txtOrt             = new TextBox();
-        lblLand            = new Label();
-        txtLand            = new TextBox();
-
-        btnSpeichern       = new Button();
-        btnAbbrechen       = new Button();
-
         SuspendLayout();
 
-        const int lw  = 130;
-        const int tw  = 220;
-        const int lh  = 20;
-        const int th  = 23;
+        const int lw  = 80;
         const int row = 28;
-        const int lx  = 12;
-        int tx = lx + lw + 6;
+        const int lx  = 10;
+        const int tx  = lx + lw + 6;       // 96
+        const int tw  = 240;
+        int       leftW = tw + tx + 10;    // ≈ 346
 
-        // === Mitarbeiter ===
-        grpMitarbeiter.Text     = "Mitarbeiter";
-        grpMitarbeiter.Font     = new Font("Segoe UI", 9F, FontStyle.Bold);
-        grpMitarbeiter.Location = new Point(12, 12);
-        grpMitarbeiter.Size     = new Size(tx + tw + 12, 4 + row * 3 + 14);
+        // ── LEFT PANEL ──────────────────────────────────────────────
+        pnlLeft = new Panel { Location = new Point(10, 10), Size = new Size(leftW, 610), AutoSize = false };
 
-        SetLabel(lblPersNr,  "Pers.Nr.:",  lx, 22,           lw, lh);
-        SetText(txtPersNr,   tx, 20,           80, th);
-        txtPersNr.MaxLength = 10;
+        lblMaHint = BuildInfoLabel("MA = Mitarbeiter  //  AP = Ansprechpartner",
+            0, 0, leftW, 8F, FontStyle.Italic, Color.DimGray);
 
-        SetLabel(lblFamName, "Nachname:",  lx, 22 + row,     lw, lh);
-        SetText(txtFamName,  tx, 20 + row,     tw, th);
-        txtFamName.MaxLength = 20;
-        txtFamName.CharacterCasing = CharacterCasing.Upper;
+        gcSelectedMa = BuildGrid(0, 20, leftW - 36, 100, false, out gvSelectedMa);
+        AddGridCol(gvSelectedMa, "FAM_NAME",     "MA_NACHNAME", 140);
+        AddGridCol(gvSelectedMa, "NAME_VORNAME", "MA_VORNAME",  120);
 
-        SetLabel(lblVorname, "Vorname:",   lx, 22 + row * 2, lw, lh);
-        SetText(txtVorname,  tx, 20 + row * 2, tw, th);
-        txtVorname.MaxLength = 20;
+        btnClearMa = BuildXButton(leftW - 30, 20, gcSelectedMa.Height);
 
-        grpMitarbeiter.Controls.AddRange(new Control[] {
-            lblPersNr, txtPersNr, lblFamName, txtFamName, lblVorname, txtVorname });
+        int y = gcSelectedMa.Bottom + 14;
+        lblVon = BuildLabel("von", lx, y, lw);
+        dtpVon = BuildDate(tx, y - 2, 130);
+        y += row;
+        lblBis = BuildLabel("bis", lx, y, lw);
+        dtpBis = BuildDate(tx, y - 2, 130);
 
-        // === Zeitraum ===
-        int grp1Bottom = grpMitarbeiter.Bottom + 10;
-        grpZeitraum.Text     = "Einsatzzeitraum";
-        grpZeitraum.Font     = new Font("Segoe UI", 9F, FontStyle.Bold);
-        grpZeitraum.Location = new Point(12, grp1Bottom);
-        grpZeitraum.Size     = new Size(tx + tw + 12, 4 + row * 2 + 14);
-
-        SetLabel(lblVon, "Von:", lx, 22,       lw, lh);
-        dtpVon.Location = new Point(tx, 20);
-        dtpVon.Size     = new Size(140, th);
-        dtpVon.Format   = DateTimePickerFormat.Short;
-        dtpVon.Font     = new Font("Segoe UI", 9F);
-
-        SetLabel(lblBis, "Bis:", lx, 22 + row, lw, lh);
-        dtpBis.Location = new Point(tx, 20 + row);
-        dtpBis.Size     = new Size(140, th);
-        dtpBis.Format   = DateTimePickerFormat.Short;
-        dtpBis.Font     = new Font("Segoe UI", 9F);
-
-        grpZeitraum.Controls.AddRange(new Control[] { lblVon, dtpVon, lblBis, dtpBis });
-
-        // === Einsatzort ===
-        int grp2Bottom = grpZeitraum.Bottom + 10;
-        grpEinsatzort.Text     = "Einsatzort / Auftraggeber";
-        grpEinsatzort.Font     = new Font("Segoe UI", 9F, FontStyle.Bold);
-        grpEinsatzort.Location = new Point(12, grp2Bottom);
-        grpEinsatzort.Size     = new Size(tx + tw + 12, 4 + row * 7 + 14);
-
-        SetLabel(lblKdnr,            "Kd.Nr.:",        lx, 22,           lw, lh);
-        SetText(txtKdnr,              tx, 20,           80, th);
-        txtKdnr.MaxLength = 10;
-
-        SetLabel(lblFirma,           "Firma:",          lx, 22 + row,     lw, lh);
-        SetText(txtFirma,             tx, 20 + row,     tw, th);
-        txtFirma.MaxLength = 200;
-
-        SetLabel(lblAnsprechName,    "Ansp. Name:",     lx, 22 + row * 2, lw, lh);
-        SetText(txtAnsprechName,      tx, 20 + row * 2, tw, th);
-        txtAnsprechName.MaxLength = 200;
-
-        SetLabel(lblAnsprechVorname, "Ansp. Vorname:",  lx, 22 + row * 3, lw, lh);
-        SetText(txtAnsprechVorname,   tx, 20 + row * 3, tw, th);
-        txtAnsprechVorname.MaxLength = 200;
-
-        SetLabel(lblStrasse,         "Straße:",          lx, 22 + row * 4, lw, lh);
-        SetText(txtStrasse,           tx, 20 + row * 4, tw, th);
-        txtStrasse.MaxLength = 200;
-
-        SetLabel(lblPlz, "PLZ:",    lx,        22 + row * 5, 40,      lh);
-        SetText(txtPlz,   lx + 46,  20 + row * 5, 60,   th);
-        txtPlz.MaxLength = 12;
-        SetLabel(lblOrt, "Ort:",    lx + 116,  22 + row * 5, 30,      lh);
-        SetText(txtOrt,   lx + 150, 20 + row * 5, tw - 30, th);
-        txtOrt.MaxLength = 100;
-
-        SetLabel(lblLand,            "Land:",            lx, 22 + row * 6, lw, lh);
-        SetText(txtLand,              tx, 20 + row * 6, tw, th);
-        txtLand.MaxLength = 30;
+        y += row + 6;
+        lblKdnr    = BuildLabel("KDNR",    lx, y, lw); txtKdnr    = BuildText(tx, y - 2, 80);  txtKdnr.Properties.MaxLength    = 10;
+        y += row;
+        lblFirma   = BuildLabel("Firma",   lx, y, lw); txtFirma   = BuildText(tx, y - 2, tw);  txtFirma.Properties.MaxLength   = 200;
+        y += row;
+        lblStrasse = BuildLabel("Strasse", lx, y, lw); txtStrasse = BuildText(tx, y - 2, tw);  txtStrasse.Properties.MaxLength = 200;
+        y += row;
+        lblPlz     = BuildLabel("PLZ",     lx, y, lw); txtPlz     = BuildText(tx, y - 2, 70);  txtPlz.Properties.MaxLength     = 12;
+        lblOrt     = BuildLabel("Ort",     tx + 76, y, 30); txtOrt = BuildText(tx + 110, y - 2, tw - 110); txtOrt.Properties.MaxLength = 100;
+        y += row;
+        lblLand    = BuildLabel("Land",    lx, y, lw); txtLand    = BuildText(tx, y - 2, tw);  txtLand.Properties.MaxLength    = 30;
         txtLand.Text = "Deutschland";
 
-        grpEinsatzort.Controls.AddRange(new Control[] {
+        btnClearKunde = BuildXButton(leftW - 30, lblKdnr.Top - 2, lblLand.Bottom - lblKdnr.Top + 6);
+
+        y = lblLand.Bottom + 16;
+        lblInfoStatus = BuildInfoLabel("", lx, y, leftW - 6, 8.5F, FontStyle.Bold, Color.DarkRed);
+        lblPflichtHint = BuildInfoLabel("Pflichtfelder", lx, y + 22, leftW - 6, 8F, FontStyle.Regular, Color.DimGray);
+
+        int btnY = lblPflichtHint.Bottom + 12;
+        btnSpeichern = new SimpleButton
+        {
+            Text     = "Speichern und beenden",
+            Size     = new Size(170, 30),
+            Location = new Point(lx, btnY)
+        };
+        btnSpeichern.Appearance.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        btnSpeichern.Appearance.Options.UseFont = true;
+        btnSpeichern.Click += btnSpeichern_Click;
+        AcceptButton = btnSpeichern;
+
+        btnAbbrechen = new SimpleButton
+        {
+            Text     = "Abbrechen",
+            Size     = new Size(100, 30),
+            Location = new Point(lx + 176, btnY)
+        };
+        btnAbbrechen.Click += btnAbbrechen_Click;
+        CancelButton = btnAbbrechen;
+
+        pnlLeft.Controls.AddRange(new Control[] {
+            lblMaHint, gcSelectedMa, btnClearMa,
+            lblVon, dtpVon, lblBis, dtpBis,
             lblKdnr, txtKdnr, lblFirma, txtFirma,
-            lblAnsprechName, txtAnsprechName, lblAnsprechVorname, txtAnsprechVorname,
-            lblStrasse, txtStrasse, lblPlz, txtPlz, lblOrt, txtOrt, lblLand, txtLand });
+            lblStrasse, txtStrasse,
+            lblPlz, txtPlz, lblOrt, txtOrt,
+            lblLand, txtLand, btnClearKunde,
+            lblInfoStatus, lblPflichtHint,
+            btnSpeichern, btnAbbrechen
+        });
 
-        // === Buttons ===
-        int btnTop = grpEinsatzort.Bottom + 16;
+        // ── RIGHT PANEL (new mode) ───────────────────────────────────
+        const int rw = 530;
+        pnlRight = new Panel
+        {
+            Location = new Point(pnlLeft.Right + 12, 10),
+            Size     = new Size(rw, 610),
+            Visible  = false
+        };
 
-        btnSpeichern.Text      = "Speichern";
-        btnSpeichern.Size      = new Size(100, 30);
-        btnSpeichern.Location  = new Point(tx, btnTop);
-        btnSpeichern.Font      = new Font("Segoe UI", 9F, FontStyle.Bold);
-        btnSpeichern.BackColor = Color.FromArgb(51, 102, 153);
-        btnSpeichern.ForeColor = Color.White;
-        btnSpeichern.FlatStyle = FlatStyle.Flat;
-        btnSpeichern.Click    += btnSpeichern_Click;
-        AcceptButton           = btnSpeichern;
+        lblMaTitle = BuildInfoLabel("Mitarbeiter – Doppelklick übernimmt (Suche im Feld oben rechts im Grid)",
+            0, 0, rw, 8.5F, FontStyle.Bold, Color.FromArgb(51, 102, 153));
 
-        btnAbbrechen.Text     = "Abbrechen";
-        btnAbbrechen.Size     = new Size(100, 30);
-        btnAbbrechen.Location = new Point(tx + 110, btnTop);
-        btnAbbrechen.Font     = new Font("Segoe UI", 9F);
-        btnAbbrechen.Click   += btnAbbrechen_Click;
-        CancelButton          = btnAbbrechen;
+        gcMaSearch = BuildGrid(0, lblMaTitle.Bottom + 4, rw, 200, true, out gvMaSearch);
+        AddGridCol(gvMaSearch, "FAM_NAME",     "MA_NACHNAME", 200);
+        AddGridCol(gvMaSearch, "NAME_VORNAME", "MA_VORNAME",  180);
+        gvMaSearch.DoubleClick += MaGridView_DoubleClick;
 
-        // === Form ===
+        lblGepaTitle = new LabelControl
+        {
+            Text         = "Kunde (GEPA) – Doppelklick übernimmt die Felder links",
+            Location     = new Point(0, gcMaSearch.Bottom + 12),
+            AutoSizeMode = LabelAutoSizeMode.None,
+            Size         = new Size(rw, 22)
+        };
+        lblGepaTitle.Appearance.BackColor = Color.FromArgb(255, 235, 100);
+        lblGepaTitle.Appearance.ForeColor = Color.Black;
+        lblGepaTitle.Appearance.Font      = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        lblGepaTitle.Appearance.TextOptions.HAlignment = HorzAlignment.Center;
+        lblGepaTitle.Appearance.Options.UseBackColor   = true;
+        lblGepaTitle.Appearance.Options.UseForeColor   = true;
+        lblGepaTitle.Appearance.Options.UseFont        = true;
+        lblGepaTitle.Appearance.Options.UseTextOptions = true;
+
+        gcGepaSearch = BuildGrid(0, lblGepaTitle.Bottom + 4, rw, 300, true, out gvGepaSearch);
+        AddGridCol(gvGepaSearch, "KDNR",    "KDNR",    62);
+        AddGridCol(gvGepaSearch, "FIRMA",   "Firma",   155);
+        AddGridCol(gvGepaSearch, "STRASSE", "Strasse", 110);
+        AddGridCol(gvGepaSearch, "ORT",     "Ort",     85);
+        AddGridCol(gvGepaSearch, "LAND",    "Land",    90);
+        AddGridCol(gvGepaSearch, "PLZ",     "PLZ",     52);
+        gvGepaSearch.DoubleClick += GepaGridView_DoubleClick;
+
+        pnlRight.Controls.AddRange(new Control[] {
+            lblMaTitle, gcMaSearch, lblGepaTitle, gcGepaSearch
+        });
+
+        // ── FORM ────────────────────────────────────────────────────
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode       = AutoScaleMode.Font;
-        int formW           = grpMitarbeiter.Right + 24;
-        int formH           = btnTop + 30 + 50;
-        ClientSize          = new Size(formW, formH);
-        MinimumSize         = new Size(formW + 16, formH + 39);
-        MaximizeBox         = false;
-        FormBorderStyle     = FormBorderStyle.FixedDialog;
-        StartPosition       = FormStartPosition.CenterParent;
         Font                = new Font("Segoe UI", 9F);
+        FormBorderStyle     = FormBorderStyle.FixedDialog;
+        MaximizeBox         = false;
+        StartPosition       = FormStartPosition.CenterParent;
         Name                = "A1AntragDetailForm";
         Text                = "A1-Antrag";
         Load               += A1AntragDetailForm_Load;
 
-        Controls.AddRange(new Control[] {
-            grpMitarbeiter, grpZeitraum, grpEinsatzort, btnSpeichern, btnAbbrechen });
+        Controls.AddRange(new Control[] { pnlLeft, pnlRight });
 
         ResumeLayout(false);
         PerformLayout();
     }
 
-    private static void SetLabel(Label lbl, string text, int x, int y, int w, int h)
+    // ── Helpers ─────────────────────────────────────────────────────
+
+    private GridControl BuildGrid(int x, int y, int w, int h, bool searchPanel, out GridView view)
     {
-        lbl.Text      = text;
-        lbl.Location  = new Point(x, y + 2);
-        lbl.Size      = new Size(w, h);
-        lbl.Font      = new Font("Segoe UI", 9F);
-        lbl.TextAlign = ContentAlignment.MiddleRight;
+        var gc = new GridControl();
+        view = new GridView();
+        ((ISupportInitialize)gc).BeginInit();
+        ((ISupportInitialize)view).BeginInit();
+
+        gc.Location = new Point(x, y);
+        gc.Size     = new Size(w, h);
+        gc.MainView = view;
+        gc.ViewCollection.AddRange(new BaseView[] { view });
+
+        view.GridControl                       = gc;
+        view.OptionsView.ShowGroupPanel        = false;
+        view.OptionsView.ColumnAutoWidth       = false;
+        view.OptionsBehavior.Editable          = false;
+        view.OptionsSelection.MultiSelect      = false;
+        view.OptionsSelection.EnableAppearanceFocusedCell = false;
+        view.FocusRectStyle                    = DrawFocusRectStyle.RowFullFocus;
+        if (searchPanel)
+        {
+            view.OptionsFind.AlwaysVisible = true;
+            view.OptionsFind.FindMode      = DevExpress.XtraEditors.FindMode.Always;
+        }
+
+        ((ISupportInitialize)view).EndInit();
+        ((ISupportInitialize)gc).EndInit();
+        return gc;
     }
 
-    private static void SetText(TextBox txt, int x, int y, int w, int h)
+    private static void AddGridCol(GridView view, string field, string caption, int width)
     {
-        txt.Location = new Point(x, y);
-        txt.Size     = new Size(w, h);
-        txt.Font     = new Font("Segoe UI", 9F);
+        var col = new GridColumn
+        {
+            FieldName    = field,
+            Caption      = caption,
+            Visible      = true,
+            VisibleIndex = view.Columns.Count,
+            Width        = width
+        };
+        col.OptionsColumn.AllowEdit = false;
+        view.Columns.Add(col);
+    }
+
+    private static SimpleButton BuildXButton(int x, int y, int h)
+    {
+        var b = new SimpleButton
+        {
+            Text     = "X",
+            Location = new Point(x, y),
+            Size     = new Size(26, h)
+        };
+        b.Appearance.Font      = new Font("Segoe UI", 8F, FontStyle.Bold);
+        b.Appearance.ForeColor = Color.DarkRed;
+        b.Appearance.Options.UseFont      = true;
+        b.Appearance.Options.UseForeColor = true;
+        return b;
+    }
+
+    private static LabelControl BuildLabel(string text, int x, int y, int w)
+    {
+        var l = new LabelControl
+        {
+            Text         = text + ":",
+            Location     = new Point(x, y + 3),
+            AutoSizeMode = LabelAutoSizeMode.None,
+            Size         = new Size(w, 20)
+        };
+        l.Appearance.TextOptions.HAlignment = HorzAlignment.Far;
+        l.Appearance.TextOptions.VAlignment = VertAlignment.Center;
+        l.Appearance.Options.UseTextOptions = true;
+        return l;
+    }
+
+    private static LabelControl BuildInfoLabel(string text, int x, int y, int w,
+        float size, FontStyle style, Color color)
+    {
+        var l = new LabelControl
+        {
+            Text         = text,
+            Location     = new Point(x, y),
+            AutoSizeMode = LabelAutoSizeMode.None,
+            Size         = new Size(w, 20)
+        };
+        l.Appearance.Font      = new Font("Segoe UI", size, style);
+        l.Appearance.ForeColor = color;
+        l.Appearance.TextOptions.HAlignment = HorzAlignment.Near;
+        l.Appearance.TextOptions.VAlignment = VertAlignment.Center;
+        l.Appearance.Options.UseFont        = true;
+        l.Appearance.Options.UseForeColor   = true;
+        l.Appearance.Options.UseTextOptions = true;
+        return l;
+    }
+
+    private static TextEdit BuildText(int x, int y, int w)
+    {
+        var t = new TextEdit();
+        ((ISupportInitialize)t.Properties).BeginInit();
+        t.Location = new Point(x, y);
+        t.Size     = new Size(w, 23);
+        ((ISupportInitialize)t.Properties).EndInit();
+        return t;
+    }
+
+    private static DateEdit BuildDate(int x, int y, int w)
+    {
+        var d = new DateEdit();
+        ((ISupportInitialize)d.Properties).BeginInit();
+        ((ISupportInitialize)d.Properties.CalendarTimeProperties).BeginInit();
+        d.Location = new Point(x, y);
+        d.Size     = new Size(w, 23);
+        d.EditValue = DateTime.Today;
+        d.Properties.DisplayFormat.FormatType   = FormatType.DateTime;
+        d.Properties.DisplayFormat.FormatString = "dd.MM.yyyy";
+        d.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.DateTime;
+        d.Properties.Mask.EditMask = "dd.MM.yyyy";
+        d.Properties.CalendarView  = DevExpress.XtraEditors.Repository.CalendarView.TouchUI;
+        ((ISupportInitialize)d.Properties.CalendarTimeProperties).EndInit();
+        ((ISupportInitialize)d.Properties).EndInit();
+        return d;
     }
 }

@@ -1,5 +1,0 @@
-{
-  "ConnectionStrings": {
-    "Oracle": "User Id=sivas;Password=DEIN_PASSWORT;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.10.10.36)(PORT=1521))(CONNECT_DATA=(SID=LINUX)))"
-  }
-}

@@ -1,12 +1,9 @@
-using Microsoft.Extensions.Configuration;
+using A1Antrag;
+using DevExpress.LookAndFeel;
+using DevExpress.XtraEditors;
 
-var config = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: false)
-    .AddJsonFile("appsettings.local.json", optional: true)
-    .Build();
-
-string connectionString = config.GetConnectionString("Oracle")
-    ?? throw new InvalidOperationException("ConnectionString 'Oracle' nicht gefunden. Bitte appsettings.local.json prüfen.");
+WindowsFormsSettings.LoadApplicationSettings();
+UserLookAndFeel.Default.SetSkinStyle("Office 2019 Colorful");
 
 ApplicationConfiguration.Initialize();
-Application.Run(new A1Antrag.Form1(connectionString));
+Application.Run(new Form1(Config.Oracle.ConnectionString));

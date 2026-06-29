@@ -8,6 +8,7 @@ obj/
 
 ## Secrets
 appsettings.local.json
+**/Config.cs
 **/licenses.licx
 
 ## macOS
