@@ -35,4 +35,4 @@ A1Antrag ist eine WinForms-Desktopanwendung zur Verwaltung von A1-Entsendebesche
 - `build_and_run.bat` — Windows-Build-Skript, prüft Config.cs-Existenz
 
 ## Letzter Commit
-`f647526` – "Fix UI issues: date validation, layout, GEPA grid, Stornieren button" (2026-06-29)
+`f1d9b87` – "Switch Von/Bis to calendar-only date picker" (2026-06-30)

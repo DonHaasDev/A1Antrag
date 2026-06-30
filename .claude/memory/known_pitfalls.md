@@ -63,6 +63,11 @@ Wenn `ClientSize.Height` nur aus `pnlLeft.Top + btnSpeichern.Bottom + 26` berech
 ist das rechte Panel (pnlRight) am unteren Rand abgeschnitten (Höhe ~495 vs. benötigte ~620px).
 Fix: `Math.Max(..., pnlRight.Bottom + 10)` im Neu-Modus. Siehe [[architecture-decisions]].
 
+## DateEdit Mask + DisableTextEditor: nicht kombinieren
+`MaskType.DateTime` mit `EditMask` ist unnötig wenn `TextEditStyle = DisableTextEditor` gesetzt ist.
+Mit DisableTextEditor ist Texteingabe sowieso gesperrt – die Mask hat keinen Effekt.
+Nur `DisplayFormat` + `EditFormat` setzen, keine `Properties.Mask.*`-Einstellungen.
+
 ## CalendarView.TouchUI auf Desktop
 DevExpress DateEdit mit `CalendarView.TouchUI` sieht auf Desktop-Windows unpassend aus.
 Für Desktop-Apps: `CalendarView.Classic` verwenden.

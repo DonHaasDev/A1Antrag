@@ -57,6 +57,16 @@ Sichtbar: `btnNeu`, `btnBearbeiten`, `btnStornieren`, `btnAktualisieren`.
 
 `btnStornieren` ruft `CallUpdateDelete(row, "85")` auf → setzt Status "85 Stornierung beantragt".
 
+## DateEdit: Kalender-only Picker (kein Tippen)
+`Properties.TextEditStyle = TextEditStyles.DisableTextEditor` → Klick auf Feld öffnet Kalender-Popup, kein manuelles Eintippen.
+`Properties.ShowToday = true` → "Heute"-Schaltfläche im Kalender.
+`Properties.ShowClear = false` → kein Leer-Button.
+`Properties.CalendarView = CalendarView.Classic` → klassischer Desktop-Kalender.
+`DisplayFormat` und `EditFormat` beide auf `"dd.MM.yyyy"`.
+
+**Why:** Benutzer wollte komfortable Datumsauswahl per Kalender statt Texteingabe.
+Keine Mask mehr nötig (war `MaskType.DateTime` + `EditMask = "dd.MM.yyyy"`).
+
 ## Datumsvalidierung Von/Bis
 Event in `A1AntragDetailForm_Load` verdrahtet (gilt für Neu- UND Bearbeitungsmodus):
 ```csharp
