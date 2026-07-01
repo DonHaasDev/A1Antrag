@@ -3,6 +3,7 @@ using DevExpress.XtraGrid.Views.Grid;
 using DevExpress.Utils;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
+using System.Text.RegularExpressions;
 
 namespace A1Antrag;
 
@@ -44,19 +45,10 @@ public partial class Form1 : Form
             Cursor = Cursors.WaitCursor;
 
             bool offen = radioGroup1.SelectedIndex == 0;
-            string filter = offen
-                ? "WHERE STATUS NOT IN ('85 Stornierung beantragt','90 Antrag ungültig (löschen)')"
-                : "WHERE ANGELEGT_AM >= SYSDATE - 730";
+            string sql = Db.PackageSql(_connection,
+                offen ? "ANTRAEGE_OFFEN_SQL" : "ANTRAEGE_ALLE_SQL");
 
-            using var adapter = new OracleDataAdapter(
-                "SELECT LFDNR, PERS_NR, FAM_NAME, NAME_VORNAME, VON, BIS, " +
-                "KDNR, FIRMA, STRASSE, PLZ, ORT, LAND, ANSPRECH_NAME, ANSPRECH_VORNAME, " +
-                "STATUS, BEANTRAGT_JN, BEANTRAGT_AM, BEANTRAGT_VON, " +
-                "GENEHMIGT_JN, GENEHMIGT_AM, GENEHMIGT_VON, " +
-                "VORL_ERH_JN, VORL_ERH_AM, VORL_ERH_VON, " +
-                "ANGELEGT_AM, ANGELEGT_VON, BEARBEITET_AM, BEARBEITET_VON " +
-                $"FROM SIVAS.SL_A1_ANTRAG_TAB {filter} ORDER BY LFDNR DESC",
-                _connection);
+            using var adapter = new OracleDataAdapter(sql, _connection);
 
             _dataTable = new DataTable();
             adapter.Fill(_dataTable);
@@ -120,7 +112,14 @@ public partial class Form1 : Form
     private void UpdateStatusBar()
     {
         int count = _dataTable?.Rows.Count ?? 0;
-        statusLabel.Text = $"{count} Datensätze  |  Benutzer: {Environment.UserName}  |  Server: {_connection?.DataSource}";
+        string sid = ExtractSid(_connection?.DataSource ?? "");
+        statusLabel.Text = $"{count} Datensätze  |  Benutzer: {Environment.UserName}  |  Server: {sid}";
+    }
+
+    private static string ExtractSid(string dataSource)
+    {
+        var m = Regex.Match(dataSource, @"SID=([^)]+)", RegexOptions.IgnoreCase);
+        return m.Success ? m.Groups[1].Value : dataSource;
     }
 
     private DataRow? GetSelectedRow()

@@ -1,6 +1,5 @@
 #nullable enable
 using System.ComponentModel;
-using DevExpress.XtraBars;
 using DevExpress.XtraEditors;
 using DevExpress.XtraEditors.Controls;
 using DevExpress.XtraGrid;
@@ -12,20 +11,15 @@ partial class Form1
 {
     private IContainer? components = null;
 
-    private BarManager barManager1 = null!;
-    private Bar bar1 = null!;
-    private BarDockControl barDockControlTop = null!;
-    private BarDockControl barDockControlBottom = null!;
-    private BarDockControl barDockControlLeft = null!;
-    private BarDockControl barDockControlRight = null!;
-    private BarButtonItem btnNeu = null!;
-    private BarButtonItem btnBearbeiten = null!;
-    private BarButtonItem btnStornieren = null!;
-    private BarButtonItem btnLoeschen = null!;
-    private BarButtonItem btnBeantragen = null!;
-    private BarButtonItem btnGenehmigen = null!;
-    private BarButtonItem btnVorlErhebung = null!;
-    private BarButtonItem btnAktualisieren = null!;
+    private FlowLayoutPanel btnPanel = null!;
+    private Button btnNeu = null!;
+    private Button btnBearbeiten = null!;
+    private Button btnStornieren = null!;
+    private Button btnLoeschen = null!;
+    private Button btnBeantragen = null!;
+    private Button btnGenehmigen = null!;
+    private Button btnVorlErhebung = null!;
+    private Button btnAktualisieren = null!;
 
     private GroupControl grpFilter = null!;
     private RadioGroup radioGroup1 = null!;
@@ -47,31 +41,15 @@ partial class Form1
     {
         components = new Container();
 
-        barManager1          = new BarManager(components);
-        bar1                 = new Bar();
-        barDockControlTop    = new BarDockControl();
-        barDockControlBottom = new BarDockControl();
-        barDockControlLeft   = new BarDockControl();
-        barDockControlRight  = new BarDockControl();
-        btnNeu               = new BarButtonItem();
-        btnBearbeiten        = new BarButtonItem();
-        btnStornieren        = new BarButtonItem();
-        btnLoeschen          = new BarButtonItem();
-        btnBeantragen        = new BarButtonItem();
-        btnGenehmigen        = new BarButtonItem();
-        btnVorlErhebung      = new BarButtonItem();
-        btnAktualisieren     = new BarButtonItem();
+        btnPanel         = new FlowLayoutPanel();
+        grpFilter        = new GroupControl();
+        radioGroup1      = new RadioGroup();
+        gridControl1     = new GridControl();
+        gridView1        = new GridView();
+        statusStrip1     = new StatusStrip();
+        statusLabel      = new ToolStripStatusLabel();
 
-        grpFilter    = new GroupControl();
-        radioGroup1  = new RadioGroup();
-
-        gridControl1 = new GridControl();
-        gridView1    = new GridView();
-
-        statusStrip1 = new StatusStrip();
-        statusLabel  = new ToolStripStatusLabel();
-
-        ((ISupportInitialize)barManager1).BeginInit();
+        btnPanel.SuspendLayout();
         ((ISupportInitialize)grpFilter).BeginInit();
         grpFilter.SuspendLayout();
         ((ISupportInitialize)radioGroup1.Properties).BeginInit();
@@ -80,86 +58,57 @@ partial class Form1
         statusStrip1.SuspendLayout();
         SuspendLayout();
 
-        // ── BarManager ───────────────────────────────────────────────
-        barManager1.Form = this;
-        barManager1.Bars.AddRange(new Bar[] { bar1 });
-        barManager1.DockControls.Add(barDockControlTop);
-        barManager1.DockControls.Add(barDockControlBottom);
-        barManager1.DockControls.Add(barDockControlLeft);
-        barManager1.DockControls.Add(barDockControlRight);
-        barManager1.Items.AddRange(new BarItem[] {
-            btnNeu, btnBearbeiten, btnStornieren, btnLoeschen,
-            btnBeantragen, btnGenehmigen, btnVorlErhebung, btnAktualisieren
-        });
-        barManager1.MaxItemId = 8;
-        barManager1.AllowMoveBarOnToolbar = false;
+        // ── Button Panel ─────────────────────────────────────────────
+        btnPanel.Dock          = DockStyle.Top;
+        btnPanel.Height        = 34;
+        btnPanel.BackColor     = Color.FromArgb(30, 30, 30);
+        btnPanel.FlowDirection = FlowDirection.LeftToRight;
+        btnPanel.WrapContents  = false;
+        btnPanel.Padding       = new Padding(0);
+        btnPanel.Margin        = new Padding(0);
 
-        // bar1
-        bar1.BarName   = "Hauptfunktionen";
-        bar1.DockCol   = 0;
-        bar1.DockRow   = 0;
-        bar1.DockStyle = BarDockStyle.Top;
-        bar1.LinksPersistInfo.AddRange(new LinkPersistInfo[] {
-            new LinkPersistInfo(btnNeu),
-            new LinkPersistInfo(btnBearbeiten),
-            new LinkPersistInfo(btnStornieren),
-            new LinkPersistInfo(btnLoeschen),
-            new LinkPersistInfo(btnBeantragen, true),
-            new LinkPersistInfo(btnGenehmigen),
-            new LinkPersistInfo(btnVorlErhebung),
-            new LinkPersistInfo(btnAktualisieren, true)
-        });
-        bar1.OptionsBar.AllowQuickCustomization = false;
-        bar1.OptionsBar.DrawDragBorder         = false;
-        bar1.OptionsBar.UseWholeRow            = true;
-        bar1.Text = "Hauptfunktionen";
+        var btnFont = new Font("Segoe UI", 9F, FontStyle.Bold);
 
-        // Buttons
-        ConfigBarButton(btnNeu,           "Neu",                0, "Neuen A1-Antrag anlegen (Strg+N)");
-        ConfigBarButton(btnBearbeiten,    "Bearbeiten",         1, "Markierten Datensatz bearbeiten (F2)");
-        ConfigBarButton(btnStornieren,    "Stornieren",         2, "Stornierung beantragen (Status 85)");
-        ConfigBarButton(btnLoeschen,      "Löschen",            3, "Markierten Datensatz löschen");
-        ConfigBarButton(btnBeantragen,    "Beantragen",         4, "A1-Antrag als beantragt markieren");
-        ConfigBarButton(btnGenehmigen,    "Genehmigen",         5, "A1-Antrag als genehmigt markieren");
-        ConfigBarButton(btnVorlErhebung,  "Vorl. Erhebung",     6, "Vorläufige Erhebung setzen");
-        ConfigBarButton(btnAktualisieren, "Aktualisieren (F5)", 7, "Daten neu laden");
+        Button MakeBtn(string text, Color backColor, EventHandler handler, bool visible = true)
+        {
+            var btn = new Button
+            {
+                Text                   = text,
+                FlatStyle              = FlatStyle.Flat,
+                BackColor              = backColor,
+                ForeColor              = Color.White,
+                Font                   = btnFont,
+                Height                 = 34,
+                Width                  = TextRenderer.MeasureText(text, btnFont).Width + 24,
+                UseVisualStyleBackColor = false,
+                Cursor                 = Cursors.Hand,
+                Visible                = visible,
+                Margin                 = new Padding(1, 0, 0, 0),
+                Padding                = new Padding(0),
+                TabStop                = false
+            };
+            btn.FlatAppearance.BorderSize         = 0;
+            btn.FlatAppearance.MouseOverBackColor  = Color.FromArgb(
+                Math.Min(255, backColor.R + 30),
+                Math.Min(255, backColor.G + 30),
+                Math.Min(255, backColor.B + 30));
+            btn.FlatAppearance.MouseDownBackColor  = Color.FromArgb(
+                Math.Max(0, backColor.R - 20),
+                Math.Max(0, backColor.G - 20),
+                Math.Max(0, backColor.B - 20));
+            btn.Click += handler;
+            btnPanel.Controls.Add(btn);
+            return btn;
+        }
 
-        SetBarButtonColor(btnStornieren,   Color.DarkRed);
-        SetBarButtonColor(btnLoeschen,     Color.DarkRed);
-        SetBarButtonColor(btnBeantragen,   Color.FromArgb(180, 100, 0));
-        SetBarButtonColor(btnGenehmigen,   Color.DarkGreen);
-        SetBarButtonColor(btnVorlErhebung, Color.DarkBlue);
-
-        btnNeu.ItemClick           += (_, _) => btnNeu_Click(this, EventArgs.Empty);
-        btnBearbeiten.ItemClick    += (_, _) => btnBearbeiten_Click(this, EventArgs.Empty);
-        btnStornieren.ItemClick    += (_, _) => btnStornieren_Click(this, EventArgs.Empty);
-        btnLoeschen.ItemClick      += (_, _) => btnLoeschen_Click(this, EventArgs.Empty);
-        btnBeantragen.ItemClick    += (_, _) => btnBeantragen_Click(this, EventArgs.Empty);
-        btnGenehmigen.ItemClick    += (_, _) => btnGenehmigen_Click(this, EventArgs.Empty);
-        btnVorlErhebung.ItemClick  += (_, _) => btnVorlErhebung_Click(this, EventArgs.Empty);
-        btnAktualisieren.ItemClick += (_, _) => btnAktualisieren_Click(this, EventArgs.Empty);
-
-        btnLoeschen.Visibility     = BarItemVisibility.Never;
-        btnBeantragen.Visibility   = BarItemVisibility.Never;
-        btnGenehmigen.Visibility   = BarItemVisibility.Never;
-        btnVorlErhebung.Visibility = BarItemVisibility.Never;
-
-        // Dock controls
-        barDockControlTop.CausesValidation = false;
-        barDockControlTop.Dock    = DockStyle.Top;
-        barDockControlTop.Manager = barManager1;
-
-        barDockControlBottom.CausesValidation = false;
-        barDockControlBottom.Dock    = DockStyle.Bottom;
-        barDockControlBottom.Manager = barManager1;
-
-        barDockControlLeft.CausesValidation = false;
-        barDockControlLeft.Dock    = DockStyle.Left;
-        barDockControlLeft.Manager = barManager1;
-
-        barDockControlRight.CausesValidation = false;
-        barDockControlRight.Dock    = DockStyle.Right;
-        barDockControlRight.Manager = barManager1;
+        btnNeu           = MakeBtn("Neu",                Color.FromArgb( 41,  98, 255), (_, _) => btnNeu_Click(this, EventArgs.Empty));
+        btnBearbeiten    = MakeBtn("Bearbeiten",          Color.FromArgb( 30,  60, 168), (_, _) => btnBearbeiten_Click(this, EventArgs.Empty));
+        btnStornieren    = MakeBtn("Stornieren",          Color.FromArgb(183,  28,  28), (_, _) => btnStornieren_Click(this, EventArgs.Empty));
+        btnLoeschen      = MakeBtn("Löschen",             Color.FromArgb(183,  28,  28), (_, _) => btnLoeschen_Click(this, EventArgs.Empty),    visible: false);
+        btnBeantragen    = MakeBtn("Beantragen",          Color.FromArgb(230,  81,   0), (_, _) => btnBeantragen_Click(this, EventArgs.Empty),   visible: false);
+        btnGenehmigen    = MakeBtn("Genehmigen",          Color.FromArgb( 27,  94,  32), (_, _) => btnGenehmigen_Click(this, EventArgs.Empty),   visible: false);
+        btnVorlErhebung  = MakeBtn("Vorl. Erhebung",      Color.FromArgb( 13,  71, 161), (_, _) => btnVorlErhebung_Click(this, EventArgs.Empty), visible: false);
+        btnAktualisieren = MakeBtn("Aktualisieren (F5)",  Color.FromArgb( 66,  66,  66), (_, _) => btnAktualisieren_Click(this, EventArgs.Empty));
 
         // ── Filter (GroupControl + RadioGroup) ───────────────────────
         grpFilter.Text   = "Filter";
@@ -183,17 +132,17 @@ partial class Form1
         gridControl1.MainView       = gridView1;
         gridControl1.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] { gridView1 });
 
-        gridView1.GridControl                       = gridControl1;
-        gridView1.Name                              = "gridView1";
-        gridView1.OptionsView.ShowGroupPanel        = true;
-        gridView1.OptionsView.ColumnAutoWidth       = false;
-        gridView1.OptionsView.EnableAppearanceEvenRow = true;
-        gridView1.OptionsFind.AlwaysVisible         = true;
-        gridView1.OptionsFind.FindMode              = DevExpress.XtraEditors.FindMode.Always;
-        gridView1.OptionsBehavior.Editable          = false;
-        gridView1.OptionsSelection.MultiSelect      = false;
+        gridView1.GridControl                             = gridControl1;
+        gridView1.Name                                    = "gridView1";
+        gridView1.OptionsView.ShowGroupPanel              = true;
+        gridView1.OptionsView.ColumnAutoWidth             = false;
+        gridView1.OptionsView.EnableAppearanceEvenRow     = true;
+        gridView1.OptionsFind.AlwaysVisible               = true;
+        gridView1.OptionsFind.FindMode                    = DevExpress.XtraEditors.FindMode.Always;
+        gridView1.OptionsBehavior.Editable                = false;
+        gridView1.OptionsSelection.MultiSelect            = false;
         gridView1.OptionsSelection.EnableAppearanceFocusedCell = false;
-        gridView1.FocusRectStyle                    = DevExpress.XtraGrid.Views.Grid.DrawFocusRectStyle.RowFullFocus;
+        gridView1.FocusRectStyle                          = DevExpress.XtraGrid.Views.Grid.DrawFocusRectStyle.RowFullFocus;
         gridView1.RowStyle    += gridView1_RowStyle;
         gridView1.DoubleClick += gridView1_DoubleClick;
 
@@ -210,13 +159,11 @@ partial class Form1
         ClientSize          = new Size(1280, 720);
         MinimumSize         = new Size(900, 500);
 
-        Controls.Add(gridControl1);
-        Controls.Add(grpFilter);
-        Controls.Add(barDockControlLeft);
-        Controls.Add(barDockControlRight);
-        Controls.Add(barDockControlTop);
-        Controls.Add(barDockControlBottom);
-        Controls.Add(statusStrip1);
+        // Add order determines dock stacking: last added Top = topmost
+        Controls.Add(gridControl1);   // Fill
+        Controls.Add(grpFilter);      // Top (below button bar)
+        Controls.Add(btnPanel);       // Top (topmost)
+        Controls.Add(statusStrip1);   // Bottom
 
         Font       = new Font("Segoe UI", 9F);
         Name       = "Form1";
@@ -225,7 +172,6 @@ partial class Form1
         Load      += Form1_Load;
         KeyDown   += Form1_KeyDown;
 
-        ((ISupportInitialize)barManager1).EndInit();
         ((ISupportInitialize)radioGroup1.Properties).EndInit();
         ((ISupportInitialize)grpFilter).EndInit();
         grpFilter.ResumeLayout(false);
@@ -233,24 +179,8 @@ partial class Form1
         ((ISupportInitialize)gridControl1).EndInit();
         statusStrip1.ResumeLayout(false);
         statusStrip1.PerformLayout();
+        btnPanel.ResumeLayout(false);
         ResumeLayout(false);
         PerformLayout();
-    }
-
-    private static void ConfigBarButton(BarButtonItem item, string caption, int id, string hint)
-    {
-        item.Caption    = caption;
-        item.Id         = id;
-        item.Name       = "bar_" + id;
-        item.PaintStyle = BarItemPaintStyle.Caption;
-        item.Hint       = hint;
-    }
-
-    private static void SetBarButtonColor(BarButtonItem item, Color color)
-    {
-        item.ItemAppearance.Normal.ForeColor = color;
-        item.ItemAppearance.Normal.Options.UseForeColor = true;
-        item.ItemAppearance.Hovered.ForeColor = color;
-        item.ItemAppearance.Hovered.Options.UseForeColor = true;
     }
 }

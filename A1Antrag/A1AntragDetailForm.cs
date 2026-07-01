@@ -77,13 +77,7 @@ public partial class A1AntragDetailForm : Form
         try
         {
             using var cmd = _connection.CreateCommand();
-            cmd.CommandText =
-                "SELECT t.persnr, t.familienname AS FAM_NAME, t.vorname AS NAME_VORNAME " +
-                "FROM SIVAS.PDE_PERSSTAMM t " +
-                "WHERE NVL(ausblenden_jn,'N') = 'N' " +
-                "  AND (TO_CHAR(austrdat,'yyyy') >= TO_CHAR(SYSDATE,'yyyy') OR austrdat IS NULL) " +
-                "  AND (TO_CHAR(eintrdat,'YYYY') <= TO_CHAR(SYSDATE,'yyyy')) " +
-                "ORDER BY t.familienname";
+            cmd.CommandText = Db.PackageSql(_connection, "MA_SELECT_SQL");
             using var adapter = new OracleDataAdapter(cmd);
             adapter.Fill(dt);
         }
@@ -101,13 +95,7 @@ public partial class A1AntragDetailForm : Form
         try
         {
             using var cmd = _connection.CreateCommand();
-            cmd.CommandText =
-                "SELECT t.kdnr, NVL(t.name1,t.name2) AS FIRMA, t.strasse, t.ort, t.land, t.plz " +
-                "FROM SIVAS.GEPA t " +
-                "WHERE t.gepa_c1 IN ('K','L','I') " +
-                "  AND t.land NOT IN ('Deutschland') " +
-                "  AND t.kz_aktiv = 'J' " +
-                "ORDER BY NVL(t.name1,t.name2)";
+            cmd.CommandText = Db.PackageSql(_connection, "GEPA_SELECT_SQL");
             using var adapter = new OracleDataAdapter(cmd);
             adapter.Fill(dt);
         }
